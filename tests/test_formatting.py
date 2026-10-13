@@ -630,3 +630,40 @@ def test_command_write_usage_no_args(runner, command_kwargs, expected_usage_line
     cli = click.Command("cli", **command_kwargs)
     result = runner.invoke(cli, ["--help"])
     assert result.output.splitlines()[0] == expected_usage_line
+
+
+@pytest.mark.parametrize(
+    "prog,width", [("program", 65), ("a-very-long-program-name", 35)]
+)
+def test_usage_does_not_split_hyphenated_arguments(prog, width):
+    args = ["--enable-verbose-logging", "--output-file-path", "--max-retry-count"]
+    formatter = click.HelpFormatter(width=width)
+    formatter.write_usage(prog, " ".join(args))
+    result = formatter.getvalue()
+    for arg in args:
+        assert arg in result
+
+
+def test_usage_does_not_split_oversized_argument():
+    arg = "--" + "long-" * 20 + "option"
+    formatter = click.HelpFormatter(width=35)
+    formatter.write_usage("program", arg)
+    assert arg in formatter.getvalue()
+
+
+def test_usage_preserves_styled_hyphenated_arguments():
+    args = ["--enable-verbose-logging", "--output-file-path", "--max-retry-count"]
+    formatter = click.HelpFormatter(width=65)
+    formatter.write_usage("program", " ".join(click.style(a, fg="green") for a in args))
+    result = strip_ansi(formatter.getvalue())
+    assert result.split() == ["Usage:", "program", *args]
+
+
+def test_wrap_text_preserves_default_hyphen_wrapping():
+    assert click.wrap_text("foo-bar baz", width=4) == "foo-\nbar\nbaz"
+    assert (
+        click.wrap_text(
+            "foo-bar baz", width=4, break_on_hyphens=False, break_long_words=False
+        )
+        == "foo-bar\nbaz"
+    )
