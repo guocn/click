@@ -59,6 +59,9 @@ def wrap_text(
     :param break_long_words: split words that exceed the available width.
     :param break_on_hyphens: allow wrapping at hyphens within words.
 
+    .. versionchanged:: 8.6.0
+        Added ``break_long_words`` and ``break_on_hyphens``.
+
     .. versionchanged:: 8.4.0
         Width is measured in visible characters. ANSI escape sequences in
         ``text``, ``initial_indent``, or ``subsequent_indent`` no longer
